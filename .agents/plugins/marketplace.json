@@ -1,11 +1,11 @@
 {
-  "name": "unity-agent-plugin",
+  "name": "unity-agent-plugin-extended",
   "interface": {
-    "displayName": "Unity"
+    "displayName": "Unity Extended"
   },
   "plugins": [
     {
-      "name": "unity",
+      "name": "unity-extended",
       "source": {
         "source": "local",
         "path": "./"
