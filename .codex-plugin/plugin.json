@@ -1,12 +1,12 @@
 {
-  "name": "unity",
+  "name": "unity-extended",
   "version": "0.1.8-beta",
   "description": "Unity's official plugin for Codex, with curated skills for game development, monetization, and performance optimization.",
   "author": {
-    "name": "Unity Technologies",
-    "url": "https://unity.com"
+    "name": "Unity Technologies && Yahima",
+    "url": "https://github.com/YahimaB/unity-agent-plugin-extended"
   },
-  "homepage": "https://unity.com",
+  "homepage": "https://github.com/YahimaB/unity-agent-plugin-extended",
   "license": "LicenseRef-Unity-Companion-License",
   "keywords": [
     "unity",
@@ -25,8 +25,8 @@
   "skills": "./skills/",
   "requires_local_executor": true,
   "interface": {
-    "displayName": "Unity",
-    "shortDescription": "Build, monetize, tune games",
+    "displayName": "Unity Extended",
+    "shortDescription": "Unity agents plugin extended",
     "longDescription": "Use Unity curated skills to develop your game, connect monetization, and optimize performance across platforms.",
     "developerName": "Unity Technologies",
     "category": "Developer Tools",
@@ -35,7 +35,7 @@
       "Read",
       "Write"
     ],
-    "websiteURL": "https://unity.com",
+    "websiteURL": "https://github.com/YahimaB/unity-agent-plugin-extended",
     "privacyPolicyURL": "https://unity.com/legal/privacy-policy",
     "termsOfServiceURL": "https://unity.com/legal/terms-of-service",
     "logo": "./assets/unity.svg",

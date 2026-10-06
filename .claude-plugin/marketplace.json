@@ -1,5 +1,5 @@
 {
-  "name": "unity-agent-plugin",
+  "name": "unity-agent-plugin-extended",
   "description": "Official Unity plugins for coding agents, packaging Unity domain knowledge as agent skills.",
   "owner": {
     "name": "Unity Technologies",
@@ -7,7 +7,7 @@
   },
   "plugins": [
     {
-      "name": "unity",
+      "name": "unity-extended",
       "source": "./",
       "description": "Unity's official game development plugin. Build, monetize, and operate Unity games with guidance grounded in Unity's documented practices."
     }

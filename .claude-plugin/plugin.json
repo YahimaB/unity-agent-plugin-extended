@@ -1,12 +1,12 @@
 {
-  "name": "unity",
+  "name": "unity-extended",
   "version": "0.1.8-beta",
-  "description": "Unity's official plugin for coding agents, with curated skills for game development, monetization, and performance optimization.",
+  "description": "Extended Unity's official plugin for coding agents, with curated skills for game development, monetization, and performance optimization.",
   "author": {
     "name": "Unity Technologies",
-    "url": "https://unity.com"
+    "url": "https://github.com/YahimaB/unity-agent-plugin-extended"
   },
-  "homepage": "https://unity.com",
+  "homepage": "https://github.com/YahimaB/unity-agent-plugin-extended",
   "license": "LicenseRef-Unity-Companion-License",
   "keywords": [
     "unity",
