@@ -5,6 +5,87 @@ description: Drive a running Unity Editor or development Player from the command
 
 # Unity Pipeline (agent control)
 
+## Reference Map
+
+Only load the reference files you need.
+
+- `references/README.md` – the package README: `unity` CLI install, the full command list with
+  parameters, and server/port overview. Read this when you need exact command signatures, or
+  before installing the CLI itself.
+- `references/Documentation~/index.md` – documentation home and guide index with one-line summaries.
+  Read this first if you are exploring the docs and need to pick a topic.
+- `references/Documentation~/TableOfContents.md` – full flat list of every doc page, including the
+  per-area command reference. Read this to find the right `commands/*.md` page for a task.
+
+### Guides (how the package works)
+
+- `references/Documentation~/creating-commands.md` – the command-authoring API (`[CliCommand]` /
+  `[CliArg]`, handler + response pattern, `MainThreadRequired` / `RuntimeOnly`). Read this only when
+  writing or debugging a new command *inside* a Unity project using this package.
+- `references/Documentation~/authoring-commands.md` – authoring-root sandbox, `ObjectRef` in /
+  `AuthoringResult` out, undo grouping, with a worked example. Read this when adding a command that
+  creates or mutates project content (materials, audio, lighting, terrain, …).
+- `references/Documentation~/safety-and-mutations.md` – the shared `confirm`/`dry_run` gate and
+  `AuthoringUndoScope` conventions for state-changing commands. Read this before invoking any
+  destructive or overwriting command so you pass the right flags.
+- `references/Documentation~/connectivity.md` – loopback binding, port ranges (Editor 7800-7849,
+  Runtime 7900-7949), the port descriptor file, and bearer-token auth. Read this when connecting to
+  an instance, targeting a non-default port, or debugging "cannot reach instance" errors.
+- `references/Documentation~/runtime-setup.md` – running the server in a development Player via
+  Project Settings > Pipeline > Runtime, the `ENABLE_RUNTIME_PIPELINE` define, and build gating.
+  Read this when runtime commands fail in a Player, or when building a dev/instrumented build.
+- `references/Documentation~/code-reload.md` – `[CodeReload]` in depth: the `Assembly.Load` vs
+  IlInterpreter backends, supported/unsupported changes, the watcher, and the woven dispatch.
+  Read this when `reload_file` fails, when targeting IL2CPP (interpreter subset only), or when
+  setting up the Code Reload watcher UI.
+- `references/Documentation~/testing.md` – how the package's own command tests are written
+  (`ViaClient` over HTTP vs `CommandDirect`). Read this when contributing tests to the package.
+- `references/Documentation~/analytics.md` – the three editor usage events reported and what is
+  deliberately not collected. Read only for privacy/analytics questions.
+- `references/Documentation~/samples.md` – `com.unity.pipeline.samples`: how to add and import
+  samples and what each demonstrates. Read this when you want a working end-to-end example
+  (e.g. the Code Reload examples) instead of writing one from scratch.
+
+### Command reference (exact parameters per area)
+
+Read the one page matching your task; each lists every command with its arguments and response shape.
+
+- `references/Documentation~/commands/assets-and-files.md` – create/import/move/copy/rename/delete/find
+  assets, folder and text-file operations, path sandboxing.
+- `references/Documentation~/commands/scenes.md` – create/open/save/inspect scenes, active-scene
+  control, hierarchy snapshots, Build Settings scene list.
+- `references/Documentation~/commands/gameobjects-and-components.md` – GameObject creation, hierarchy
+  queries, Transform mutation, add/remove components, serialized-property editing.
+- `references/Documentation~/commands/prefabs.md` – save/instantiate prefabs, variants,
+  apply/revert overrides, unpack, prefab-stage editing.
+- `references/Documentation~/commands/materials.md` – read/edit material shader properties and
+  introspect shaders.
+- `references/Documentation~/commands/scripts.md` – `create_script`/`attach_script`, serialized field
+  read/write, `run_script`, and the create -> recompile -> attach flow.
+- `references/Documentation~/commands/build-and-compilation.md` – Player builds and BuildReport, build
+  target switching, EditorUserBuildSettings, Build Profiles, plus recompile/test commands.
+- `references/Documentation~/commands/editor-lifecycle-and-observability.md` – play mode, focus,
+  menus, editor status, console logs, performance capture.
+- `references/Documentation~/commands/runtime.md` – player-only commands (`runtime_status`, `log`,
+  `set_timescale`, …) and which need a dev Player.
+- `references/Documentation~/commands/project-settings.md` – get/set Audio, Graphics, Input, Physics,
+  Player, Quality, Runtime Pipeline, Tags & Layers, Time settings.
+- `references/Documentation~/commands/package-manager.md` – UPM list/search/add/remove/resolve/status
+  over the registry.
+- `references/Documentation~/commands/baking.md` – lightmaps, NavMesh, occlusion culling; async
+  `bake_*` + `*_bake_status` polling.
+- `references/Documentation~/commands/animation.md` – AnimationClips and curves, AnimatorControllers
+  (parameters/layers/states/transitions), Timeline assets.
+- `references/Documentation~/commands/navigation.md` – Editor selection get/set and Unity Search queries.
+- `references/Documentation~/commands/capture.md` – render game view, Scene View, or a UI Toolkit
+  element to a base64 PNG so an agent can see the editor.
+- `references/Documentation~/commands/batch.md` – run many commands in one transactional request with
+  cross-operation references and rollback.
+- `references/Documentation~/commands/wait.md` – server-side `wait_for` conditions (sync/async),
+  replacing token-expensive client-side polling loops.
+
+## Overview
+
 Invoke commands with `unity command <name> [args]`. Run `unity command` with no name to
 list what an instance exposes. Two servers exist: **Editor** (`7800-7849`, auto-starts with
 the editor) and **Runtime** (`7900-7949`, only in a dev Player build). See the package
