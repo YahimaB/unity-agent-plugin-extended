@@ -1,5 +1,6 @@
 {
   "name": "unity-extended",
+  "displayName": "Unity-extended",
   "version": "0.1.8-beta",
   "description": "Extended Unity's official plugin for coding agents, with curated skills for game development, monetization, and performance optimization.",
   "author": {
@@ -7,6 +8,7 @@
     "url": "https://github.com/YahimaB/unity-agent-plugin-extended"
   },
   "homepage": "https://github.com/YahimaB/unity-agent-plugin-extended",
+  "repository": "https://github.com/YahimaB/unity-agent-plugin-extended",
   "license": "LicenseRef-Unity-Companion-License",
   "keywords": [
     "unity",
@@ -21,5 +23,10 @@
     "localization",
     "multiplayer",
     "shader-graph"
-  ]
+  ],
+  "icon": "./assets/unity-tile.svg",
+  "documentationUrl": "https://github.com/Unity-Technologies/unity-agent-plugin#readme",
+  "supportUrl": "https://github.com/Unity-Technologies/unity-agent-plugin/issues",
+  "privacyPolicyUrl": "https://unity.com/legal/privacy-policy",
+  "termsOfServiceUrl": "https://unity.com/legal/terms-of-service"
 }

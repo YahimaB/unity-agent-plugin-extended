@@ -1,0 +1,37 @@
+name: Validate manifests
+
+on:
+  pull_request:
+    paths:
+      - '.claude-plugin/**'
+      - '.codex-plugin/**'
+      - '.antigravity-plugin/**'
+      - '.agents/**'
+      - '.github/README.md'
+      - 'scripts/plugin-metadata.json'
+      - 'scripts/*.mts'
+      - 'scripts/tsconfig.json'
+      - '.github/workflows/validate-manifests.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.claude-plugin/**'
+      - '.codex-plugin/**'
+      - '.antigravity-plugin/**'
+      - '.agents/**'
+      - 'scripts/plugin-metadata.json'
+
+jobs:
+  shared-values:
+    name: Manifests share one set of values
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Typecheck the scripts
+        run: |
+          npm install --no-save --no-audit --no-fund typescript@5 @types/node@24
+          npx tsc -p scripts/tsconfig.json
+      - run: node scripts/sync-manifests.mts --check

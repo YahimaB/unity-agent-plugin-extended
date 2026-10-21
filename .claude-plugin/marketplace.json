@@ -9,7 +9,8 @@
     {
       "name": "unity-extended",
       "source": "./",
-      "description": "Unity's official game development plugin. Build, monetize, and operate Unity games with guidance grounded in Unity's documented practices."
+      "description": "Unity's official game development plugin. Build, monetize, and operate Unity games with guidance grounded in Unity's documented practices.",
+      "category": "Developer Tools"
     }
   ]
 }
