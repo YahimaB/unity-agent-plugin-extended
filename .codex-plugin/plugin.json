@@ -1,6 +1,6 @@
 {
   "name": "unity-extended",
-  "version": "0.1.8-beta.1",
+  "version": "0.1.9-beta",
   "description": "Unity's official plugin for Codex, with curated skills for game development, monetization, and performance optimization.",
   "author": {
     "name": "Unity Technologies Yahima",
@@ -39,6 +39,7 @@
     "websiteURL": "https://github.com/YahimaB/unity-agent-plugin-extended",
     "privacyPolicyURL": "https://unity.com/legal/privacy-policy",
     "termsOfServiceURL": "https://unity.com/legal/terms-of-service",
+    "supportURL": "https://support.unity.com",
     "logo": "./assets/unity.svg",
     "composerIcon": "./assets/unity-small.svg",
     "brandColor": "#000000",

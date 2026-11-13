@@ -41,7 +41,7 @@ Unified entry point for Unity Gaming Services client types. Provides auto-genera
 
 Use cases for `IAdminClient`:
 
-- **Deployment Window custom providers** — deploy commands that write to Cloud Save, Economy, Leaderboards, etc.
+- **Deployment Window custom providers** — deploy commands that write to Cloud Save, Leaderboards, etc.
 - **Editor tools** — custom inspectors or windows that read/write game-wide data
 - **Build pipelines** — pre-build steps that push config data to UGS
 
@@ -69,7 +69,7 @@ Used for backend tooling, editor extensions, Deployment Window integrations, and
 ```csharp
 using Unity.Services.Apis;
 
-var adminClient = UnityServicesApiClient.AdminClient;
+var adminClient = ApiService.CreateAdminClient();
 adminClient.SetServiceAccount(keyId, keySecret);
 ```
 
@@ -83,7 +83,6 @@ Service account credentials are created in the Unity Dashboard under **Project S
 | `CloudSaveFiles` | `ICloudSaveFilesAdminApi` | Cloud Save — file storage |
 | `CloudCodeModules` | `ICloudCodeModulesAdminApi` | Cloud Code — C# modules |
 | `CloudCodeScripts` | `ICloudCodeScriptsAdminApi` | Cloud Code — JS scripts |
-| `Economy` | `IEconomyAdminApi` | Economy — config and player data |
 | `RemoteConfig` | `IConfigsAdminApi` | Remote Config |
 | `RemoteConfigSchemas` | `ISchemasAdminApi` | Remote Config schemas |
 | `GameOverrides` | `IGameOverridesAdminApi` | Game Overrides |
@@ -136,17 +135,13 @@ Same pattern for **Private Custom** (`GetPrivateCustomItems`, `SetPrivateCustomI
 
 ## IGameClient
 
-Created via `UnityServicesApiClient.GameClient` after player authentication. Runtime only.
+Created via `ApiService.CreateGameClient()` after player authentication. Runtime only.
 
 | Property | Type | Service |
 |---|---|---|
 | `CloudSaveData` | `ICloudSaveDataApi` | Cloud Save player data |
 | `CloudSaveFiles` | `ICloudSaveFilesApi` | Cloud Save files |
 | `CloudCode` | `ICloudCodeApi` | Cloud Code invocation |
-| `EconomyConfiguration` | `IEconomyConfigurationApi` | Economy config |
-| `EconomyCurrencies` | `IEconomyCurrenciesApi` | Currency balances |
-| `EconomyInventory` | `IEconomyInventoryApi` | Player inventory |
-| `EconomyPurchases` | `IEconomyPurchasesApi` | Purchases |
 | `Leaderboards` | `ILeaderboardsApi` | Leaderboard scores |
 | `Lobby` | `ILobbyApi` | Lobby management |
 | `RemoteConfig` | `IRemoteConfigSettingsApi` | Remote Config |
@@ -158,7 +153,7 @@ Created via `UnityServicesApiClient.GameClient` after player authentication. Run
 | `QosDiscovery` | `IQosDiscoveryApi` | QoS |
 | `Analytics` | `IAnalyticsApi` | Analytics |
 
-Most developers use the high-level SDKs (`CloudSaveService.Instance`, `EconomyService.Instance`) instead of `IGameClient` directly.
+Most developers use the high-level SDKs (`CloudSaveService.Instance`, `LeaderboardsService.Instance`) instead of `IGameClient` directly.
 
 ---
 
@@ -167,7 +162,7 @@ Most developers use the high-level SDKs (`CloudSaveService.Instance`, `EconomySe
 Used from dedicated game servers. Authenticated with a server key or service account.
 
 ```csharp
-var serverClient = UnityServicesApiClient.ServerClient;
+var serverClient = ApiService.CreateServerClient();
 await serverClient.SignInFromServer();
 ```
 
@@ -176,10 +171,6 @@ await serverClient.SignInFromServer();
 | `CloudSaveData` | `ICloudSaveDataApi` | Cloud Save player data |
 | `CloudSaveFiles` | `ICloudSaveFilesApi` | Cloud Save files |
 | `CloudCode` | `ICloudCodeApi` | Cloud Code |
-| `EconomyConfiguration` | `IEconomyConfigurationApi` | Economy config |
-| `EconomyCurrencies` | `IEconomyCurrenciesApi` | Currencies |
-| `EconomyInventory` | `IEconomyInventoryApi` | Inventory |
-| `EconomyPurchases` | `IEconomyPurchasesApi` | Purchases |
 | `Leaderboards` | `ILeaderboardsApi` | Leaderboards |
 | `Lobby` | `ILobbyApi` | Lobbies |
 | `PlayerNames` | `IPlayerNamesApi` | Display names |
@@ -191,7 +182,7 @@ await serverClient.SignInFromServer();
 Elevated server client with admin-equivalent access to player data. Use when a dedicated server needs to read or modify any player's data with elevated privileges.
 
 ```csharp
-var trustedClient = UnityServicesApiClient.TrustedClient;
+var trustedClient = ApiService.CreateTrustedClient();
 trustedClient.SetServiceAccount(keyId, keySecret);
 await trustedClient.SignInWithServiceAccount(projectId, environmentId);
 ```
@@ -208,7 +199,7 @@ Same service area properties as `IServerClient`, plus `PlayerAuthentication` and
 using Unity.Services.Apis;
 
 // Admin client is editor-only. Guard with #if UNITY_EDITOR in runtime assemblies.
-var adminClient = UnityServicesApiClient.AdminClient;
+var adminClient = ApiService.CreateAdminClient();
 adminClient.SetServiceAccount("your-key-id", "your-key-secret");
 ```
 
@@ -220,7 +211,7 @@ This is the pattern for Deployment Window integrations that push JSON into Cloud
 using Unity.Services.Apis;
 using Unity.Services.Apis.Admin.CloudSave;
 
-var adminClient = UnityServicesApiClient.AdminClient;
+var adminClient = ApiService.CreateAdminClient();
 adminClient.SetServiceAccount(keyId, keySecret);
 
 string projectId = CloudProjectSettings.projectId;
@@ -262,7 +253,7 @@ async Task SetupGameClient()
     await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
     // Game client is automatically authenticated via the signed-in player
-    var client = UnityServicesApiClient.GameClient;
+    var client = ApiService.CreateGameClient();
     var scores = await client.Leaderboards.GetScoresAsync("WEEKLY_LB");
 }
 ```
@@ -273,7 +264,7 @@ async Task SetupGameClient()
 using Unity.Services.Apis;
 
 // serverAuthToken provided by the Multiplay server environment
-var serverClient = UnityServicesApiClient.ServerClient;
+var serverClient = ApiService.CreateServerClient();
 await serverClient.SignInFromServer();
 
 await serverClient.Lobby.CreateOrJoinLobbyAsync(...);

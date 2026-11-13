@@ -1,27 +1,56 @@
 ---
 name: unity-package-management
-description: Adds, removes, upgrades, and discovers Unity (UPM) packages from outside the Editor. Use for headless or CI package installs, verifying package IDs and versions, or choosing which packages a game needs. The Unity CLI doesn't manage packages.
+description: Adds, removes, upgrades, and finds Unity (UPM) packages from outside the Editor. Use for package installs, checking package IDs and versions, or choosing which packages a game needs.
 allowed-tools:
   - Bash
-  - Read
   - Write
   - Edit
 ---
 
-# Unity Package Management (headless, via the C# Client API)
+# Unity Package Management (Pipeline commands first, C# script as the fallback)
 
-Add, remove, upgrade, and discover UPM (Unity Package Manager) packages programmatically with
-`UnityEditor.PackageManager.Client`, driven headless from the terminal or CI. Do **not**
-hand-edit `Packages/manifest.json` — the Client API resolves dependencies and compatible
-versions correctly, whereas manual edits routinely break resolution.
+Add, remove, upgrade, and discover UPM (Unity Package Manager) packages with the `package`
+commands of the project's Pipeline package, run through `unity command`. Only when no Editor can
+answer those commands, fall back to `UnityEditor.PackageManager.Client` driven headless from a
+script (see [Fallback](#fallback-no-editor-to-ask-the-c-client-api)). Do **not** hand-edit
+`Packages/manifest.json`: the Package Manager resolves dependencies and compatible versions
+correctly, whereas manual edits routinely break resolution.
 
-This complements the **`unity-cli`** skill (editor install, project creation, build/test): the
-CLI has **no** package-management command, so all package work goes through the Editor's C# API.
+This complements the **`unity-cli`** skill (editor install, project creation, build/test), which
+documents `unity command`, `unity status` and `unity pipeline install`.
+
+## Use the package commands first
+
+The Pipeline package registers a `package` command group: `add`, `remove`, `list`, `resolve`,
+`search` and `status`. They need a running Editor whose project has `com.unity.pipeline` (add it
+with `unity pipeline install`, then `unity open`, then wait with `unity status --until-ready`).
+Each command's parameters come from the Editor, so read them before the first call. Don't guess
+a parameter name.
+
+```bash
+unity status --until-ready --project-path "<project-path>"
+unity command package --project-path "<project-path>"                  # the package commands this Editor has
+unity command --query package --format json --project-path "<project-path>"   # each command's parameter schema
+unity command package search --project-path "<project-path>"           # then pass the parameters the schema lists
+unity command package add --project-path "<project-path>"              # add one or more packages by id
+unity command package list --project-path "<project-path>"             # confirm what is installed
+```
+
+Pass a command's parameters after its name, as the schema names them (`unity command <group>
+<command> --<parameter> <value>`). Add every package you need in one `package add` call when the
+schema accepts several ids. Pin a version the way the schema describes when a minimum is required
+(the `@<version>` id form belongs to the C# fallback below). Use `package status` or `package list` to verify, and
+`package remove` to drop a package. Treat a non-zero exit as a failure and read its message.
+
+If `unity command package` reports no such group, the project's Pipeline package predates it:
+run `unity pipeline upgrade`, or use the fallback below. The fallback starts its own Editor, so it
+can't run while this one has the project open: ask the user to save and close it first (see the
+fallback's first rule).
 
 ## When to use
 
 - Add / remove / upgrade one or more packages in an existing or freshly-created project.
-- Set up a project's packages non-interactively in CI.
+- Set up a project's packages non-interactively in CI (fallback script when no Editor is running).
 - Verify a package id exists, or find its available versions, before depending on it.
 - Decide which packages a game actually needs — see
   [references/select-packages.md](references/select-packages.md).
@@ -33,6 +62,24 @@ already provides (URP templates already include the render pipeline, Input Syste
 genre / look / platform / monetization → package mapping, plus how to search the registry, is
 in [references/select-packages.md](references/select-packages.md). Produce a **deduplicated
 list of package ids** and read it back to the user before installing.
+
+## Fallback: no Editor to ask (the C# Client API)
+
+Use this section only when `package add` can't run: no Editor is open and you don't want one
+open, the project has no Pipeline package, or the command group is missing and an upgrade isn't
+wanted. It installs through `Client.AddAndRemove` from a script the Editor runs in batch mode.
+
+**The project must be closed first.** The script runs in a second, batch-mode Editor, and an Editor
+that already has the project open holds its lock, so the batch run fails before the script starts.
+`unity editors running --format json` lists every open Editor, with or without the Pipeline package
+(`unity status` lists only Pipeline projects, so an empty result there does not mean closed). Compare each
+`data.instances[].projectPath` with the target project. Also check whether `<project-path>/Temp/UnityLockfile`
+exists, and ask the user whether the project is open in an Editor. If an Editor has the project open, or you can't tell, ask the user to save their work and close it,
+and wait until they say it is closed. If the batch run still fails on a lock, treat the project as open and
+ask the user to close it; don't retry or remove the lock file. Never close or kill
+the user's Editor yourself: it may hold unsaved scenes or a Play Mode session. If the user wants to
+keep it open, don't run the fallback: tell them the install waits until the project is closed or the
+Pipeline package is upgraded (`unity pipeline upgrade`, then `package add`).
 
 ## The `-quit` problem — why NOT `unity run` for installs
 
@@ -213,8 +260,9 @@ Editor (a **known** id, not free-text search), query the registry directly — s
 
 ## Run it headless (direct Editor invocation, no `-quit`)
 
-Resolve the Editor binary from the version, then run it in batch mode. The script owns quitting
-via `EditorApplication.Exit`, so do **not** pass `-quit`:
+Resolve the Editor binary from the version, then run it in batch mode. Run it only once no Editor
+has the project open (see the fallback's first rule). The script owns quitting via
+`EditorApplication.Exit`, so do **not** pass `-quit`:
 
 ```bash
 VERSION="<version>"          # e.g. 6000.0.47f1 (or an installed version)

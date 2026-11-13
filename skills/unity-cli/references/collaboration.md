@@ -23,14 +23,24 @@ including the 3D pins and sketch overlays whose payloads are described under
 needs no package: it talks to the collaboration service directly, so it works with or without the
 Editor open. Annotations created either way are visible to both.
 
+Relative links in this file resolve to the skill directory's `references/` folder, so `../SKILL.md` is the skill's main page.
+
+### Contents
+
+- Shared behavior
+- Data model
+- Annotations
+- Attachments
+- Reactions, thumbnails, read state
+- Jira
+
 ### Shared behavior
 
 **Project scoping — `--cloud-project` OR an inferred project.** The project-scoped commands
 (`annotations`, `attachments`, `reactions`, `thumbnail`, `read`, `subscribe`, `unsubscribe`, and
 `jira issues create/get/link/unlink/search/types`) take both `--cloud-project <id>` (Unity Cloud
-project id — find one with `unity cloud project list`, see [auth-license-cloud.md](auth-license-cloud.md))
-and `--project-path <path>`. It takes an id only, not a project name. `--project-id` is the
-deprecated spelling of `--cloud-project`: it still works, and warns. Neither is required: resolution
+project id — find one with `unity cloud projects`, see [auth-license-cloud.md](auth-license-cloud.md))
+and `--project-path <path>`. It takes an id only, not a project name. Neither is required: resolution
 order is
 
 1. explicit `--cloud-project`, else
@@ -50,14 +60,14 @@ drop it outside one too. Note the link outranks the default: it is the more spec
 directory you pointed the command at. Most of `jira` is scoped
 differently — see [Jira](#jira).
 
-**`--all` — auto-paginate.** `annotations list`, `annotations replies`, and `jira issues list` accept
+**`--all` — auto-paginate.** `annotations`, `annotations replies`, and `jira issues` accept
 `--all` to stream every page instead of one. It is **mutually exclusive with `--next` and
 `--limit`** — passing either alongside it is an error.
 
 **`--full` and `--resolve-users`** (table output helpers): `--full` prints annotation/reply text
 untruncated (whitespace still collapsed to one line); `--resolve-users` replaces user ids with
-display names. `--resolve-users` is on `annotations list`/`replies`/`get`/`export` and
-`attachments list`; `--full` only on `annotations list`/`replies`.
+display names. `--resolve-users` is on `annotations`/`replies`/`get`/`export` and
+`attachments`; `--full` only on `annotations`/`replies`.
 
 **Delete confirmations.** `annotations delete`, `annotations delete-fields`, `attachments delete`,
 `jira server delete`, and `jira project delete` prompt for confirmation (default **No**) only when
@@ -77,7 +87,7 @@ Both split on the first `=` only (values may contain `=`); repeating a key means
 a pair without `=` or with an empty key fails with `Invalid key=value pair: <pair>`.
 
 **Raw-JSON flags.** `--camera`, `--local`, `--time`, `--position`,
-`--attachments`, and `annotations list --query` take a JSON value and fail with
+`--attachments`, and `annotations --query` take a JSON value and fail with
 `Invalid JSON for --<flag>` when it doesn't parse. Shapes:
 
 | Flag | JSON shape |
@@ -139,11 +149,11 @@ annotations under each, so any count or listing is scoped to whichever prefix yo
 
 #### Attachment payload shapes
 
-`threadAttachmentsCount` on the root counts the **whole thread**, while `attachments list <id>`
+`threadAttachmentsCount` on the root counts the **whole thread**, while `attachments <id>`
 returns only the attachments owned by that one annotation. A root reporting 5 can list just its own
 single sketch, with the other four hanging off replies — that mismatch is expected, not a bug. To
-reach them, list the replies (`annotations replies <id>`) and call `attachments list` per reply id,
-or read the `attachments` field directly via `annotations list --include-fields attachments`.
+reach them, list the replies (`annotations replies <id>`) and call `attachments` per reply id,
+or read the `attachments` field directly via `annotations --include-fields attachments`.
 
 **Don't index it.** `threadAttachmentsCount` is normally a number (or `null`), but a per-type object
 (`{ "sketch": 4, "spatial-3d": 3, "file": 1 }`) also shows up in real payloads. Guard the type
@@ -222,9 +232,9 @@ Annotation objects returned by `get`/`list`/`replies` (`--format json`) carry: `
 | `annotations create` | `<target>` | `--text`, `--reply-to <id>`, `--status Active\|Draft`, `--metadata k=v`…, `--target-context k=v`…, `--camera`, `--local`, `--time`, `--attachments`, `--unresolve-root-annotation` |
 | `annotations delete` | `<annotationId>` | (confirmation — see Shared behavior) |
 | `annotations delete-fields` | `<annotationId> <field...>` | removes metadata fields; variadic; confirmation |
-| `annotations export` | — | `--target <path>` — **defaults to `assets/projects/<id>/**` only**, see below; `--out <file>` (else stdout), `--resolve-users`; the service returns `assetId` + `assetName` here that `list` does not — the CLI copies the response page verbatim, so treat those as service behavior |
+| `annotations export` | — | `--target <path>` — omitted, no target is sent and the export covers the whole project, see below; `--out <file>` (else stdout), `--resolve-users`; the service returns `assetId` + `assetName` here that `list` does not — the CLI copies the response page verbatim, so treat those as service behavior |
 | `annotations get` | `<annotationId>` | `--fields a,b,c` or `--fields all` (table output only), `--resolve-users` |
-| `annotations list` | — | `--query <json>` (optional — defaults to root threads only), `--next <cursor>`, `--limit 1-100` (default 10), `--all`, `--sort Ascending\|Descending`, `--sort-field annotationId\|latestReply`, `--include-fields a,b`, `--fields a,b` or `--fields all` (table output only), `--full`, `--resolve-users` |
+| `annotations` | — | `--query <json>` (optional — defaults to root threads only), `--next <cursor>`, `--limit 1-100` (default 10), `--all`, `--sort Ascending\|Descending`, `--sort-field annotationId\|latestReply`, `--include-fields a,b`, `--fields a,b` or `--fields all` (table output only), `--full`, `--resolve-users` |
 | `annotations replies` | `<annotationId>` | `--next`, `--limit 1-100`, `--all`, `--sort`, `--status-filter All\|Active\|Sending\|Draft` (repeat flag), `--fields a,b` or `--fields all` (table output only), `--full`, `--resolve-users` |
 | `annotations resolve` / `annotations unresolve` | `<annotationId>` | — (echoes only `annotationId`, see below) |
 | `annotations status` | `<annotationId> <Active\|Sending\|Draft>` | — |
@@ -242,27 +252,30 @@ unity collaboration annotations create "unity/projects/$PROJ/assets/$ASSET" \
   --cloud-project $PROJ --reply-to $ANNOTATION_ID --text "Fixed in latest import"
 
 # List root threads (default query) from inside a cloud-linked project — no --cloud-project needed
-unity collaboration annotations list --include-fields replyCount,latestReply --format json
+unity collaboration annotations --include-fields replyCount,latestReply --format json
 
 # Custom query — must be a JSON ARRAY of clauses; the default is
 #   [{"type":"hasNot","field":"annotationParentId"}]   (root threads only)
-unity collaboration annotations list --cloud-project $PROJ \
+unity collaboration annotations --cloud-project $PROJ \
   --query '[{"type":"hasNot","field":"annotationParentId"}]' --all --format ndjson
 
-# Export for offline analysis — ONE prefix tree per run; the bare command covers
-# only assets/**, so an Editor-annotated project needs both invocations.
+# Export for offline analysis: the bare command sends no target (the whole project)
+unity collaboration annotations export --cloud-project $PROJ --out annotations.json
+# Restrict it to one asset
 unity collaboration annotations export --cloud-project $PROJ \
-  --target "assets/projects/$PROJ/**" --out annotations-assets.json
-unity collaboration annotations export --cloud-project $PROJ \
-  --target "unity/projects/$PROJ/**"  --out annotations-editor.json
+  --target "unity/projects/$PROJ/assets/<assetId>/**" --out annotations-asset.json
 ```
 
-**`export` is not a whole-project export.** With no `--target` the command defaults to
-`assets/projects/<projectId>/**`, so annotations under the separate `unity/projects/<projectId>/**`
-tree are silently absent from the archive — and nothing in the output says so. Always pass `--target`
-explicitly, once per prefix, when completeness matters. (Note the default differs from
-`annotations count`, which defaults to the `unity/**` tree instead.) The CLI's own `--target` help
-text says "the whole project", which contradicts the actual default — trust the prefix above.
+**`export` with no `--target` sends no target.** The request carries only the page size, which asks
+the service for the whole project; no path prefix decides what is included. Compare its `count` with
+`annotations count --grouped` per prefix when completeness matters. A `--target` the service finds no
+assets for fails with HTTP 500 "No assets found for the provided ids"; the error then names the target
+and suggests running without `--target`.
+
+When the service answers an export with HTTP 500 "No assets found for the provided ids", an annotation points
+at an asset that no longer exists and the service refuses the whole export without naming it. The CLI
+appends a hint: list the targets with `annotations count "<target>" --grouped` (the target the export asked for; `count` defaults to another tree), then export the ones that still exist
+with `--target`.
 
 **`--query` shape.** A JSON *array* of clauses (a bare object is rejected:
 `The --query value must be a JSON array of query clauses.`). Clause vocabulary is the
@@ -290,6 +303,12 @@ is a silent no-op (it is echoed back in `data.fields` and the command still exit
 report 16 while 34 more exist. Pass the target explicitly (once per prefix) when you want a real
 total, and prefer `--grouped` to see which trees are populated.
 
+**`count --grouped` is a listing.** Its `--format json` `data` keeps the service's `targets` and adds
+them as `items`, with `total`, `nextPage` and `partial`. `nextPage` is the next `--offset`, so pass it
+back as `--offset <nextPage>` (with the same `--limit`) until it is `null`. With no `--limit` and no
+total from the service it is `null`, so pass `--limit` when you need every page. Without `--grouped`,
+`count` is a single result, not a listing.
+
 **The mutators echo ids, not the annotation.** `resolve` and `unresolve` return just
 `{ "annotationId": … }`; `status` adds `status`, and `delete-fields` adds the `fields` it was asked to
 remove. None return a `resolved` timestamp or the updated object. A read-after-write therefore needs a follow-up `get`; an id-only response is success, not a
@@ -306,12 +325,12 @@ over a camera view), **spatial** (labeled 3D anchor) — payload shapes in
 
 | Command | Args | Key options |
 |---|---|---|
-| `attachments list` | `<annotationId>` | `--resolve-users` |
+| `attachments` | `<annotationId>` | `--resolve-users` |
 | `attachments delete` | `<annotationId> <attachmentId>` | (confirmation — see Shared behavior) |
 | `attachments download` | `<annotationId> <attachmentId>` | `--out <path>` (default: the attachment's original filename in CWD, falling back to `<attachmentId>` when it has no file path), `--force` (overwrite), `--width <px>` (resize image) |
 | `attachments upload` | `<annotationId> <file>` | `--name` (display name), `--content-type` (override inferred MIME) |
 | `attachments add file` | `<annotationId> <file>` | same options and **same handler** as `upload`; only the reported command label, the success message, and the JSON error code (`COLLAB_ATTACHMENTS_ADD_ERROR`) differ — use either |
-| `attachments add sketch` | `<annotationId>` | `--sketch-data <json>` **(required)**, `--camera <json>` **(required)**, `--time <json>`, `--preview <file>`, `--sketch-image <file>` |
+| `attachments add sketch` | `<annotationId>` | `--sketch-data <json>` **(required)**, `--camera <json>` **(required)**, `--time <json>`, `--preview <file>`, `--sketch-image <file>`: pass **both files or neither** (one alone exits 2, `COLLAB_SKETCH_FILES_INCOMPLETE`, before any request) |
 | `attachments add spatial` | `<annotationId>` | `--label` **(required)**, `--position <json>` **(required)**, `--camera <json>` **(required)**, `--time <json>`, `--local <json>` |
 | `attachments update [file]` | `<annotationId> <attachmentId>` | `--content-type`, `--metadata k=v`… — **at least one required**; `file` is the **default variant**: `update <ids…>` without a subcommand means `update file` |
 | `attachments update sketch` | `<annotationId> <attachmentId>` | `--sketch-data`, `--camera`, `--time`, `--metadata k=v`… — each individually optional, but **at least one required** |
@@ -333,13 +352,16 @@ unity collaboration attachments download $ANNOTATION_ID $ATTACHMENT_ID --cloud-p
 
 Notes:
 
+- Under `--format ndjson` each attachment is one row line carrying its own `type` (`file`, `sketch`,
+  `spatial-3d`) and no `"type":"row"` marker, then the `{"type":"result",…}` frame closes the stream.
 - `--sketch-data` is passed through as a raw string, not parsed as JSON — only `--camera`/`--time`/
   `--position`/`--local` get JSON validation at the CLI layer.
 - Options required on `add sketch`/`add spatial` become *individually* optional on the matching
   `update` variant — but every variant, `file` included, rejects a flagless invocation with a
   `NO_FIELDS` error. Pass at least one change flag.
-- The local-space anchor is `--local` here and on annotations (same JSON shape). Annotations
-  still accept the old `--local-space`, with a deprecation warning.
+- `update sketch` without `--sketch-data` reads the annotation first and resends the attachment's
+  stored sketch data, since the service rejects a sketch update that lacks it.
+- The local-space anchor is `--local` here and on annotations (same JSON shape).
 
 ---
 
@@ -352,7 +374,7 @@ else inferred from the current project (see [Shared behavior](#shared-behavior))
 |---|---|---|
 | `reactions add` / `reactions remove` | `<annotationId> <emoji>` | emoji is a single Unicode emoji, e.g. `👍` |
 | `thumbnail upload` | `<annotationId> <file>` | image file; MIME inferred from extension (jpg/png/gif/webp) |
-| `thumbnail download` | `<annotationId>` | `--out <path>` (default `./thumbnail`), `--width <pixels>`; **no `--force`** — errors if the file exists ("Delete it first") |
+| `thumbnail download` | `<annotationId>` | `--out <path>` (default `./thumbnail`), `--width <pixels>` (an integer of at least 50); **no `--force`** — errors if the file exists ("Delete it first") |
 | `read` | `<annotationId>` | `--timestamp <iso8601>` (default now) — marks the thread read up to that time (per-user read receipt) |
 | `subscribe` / `unsubscribe` | `<annotationId>` | per-thread notification subscription for the current user |
 
@@ -390,16 +412,15 @@ Connects Collaboration annotations to Jira. Three layers, three id types — don
 | `jira server *` | an organization, required (rejected at parse time) |
 | `jira project add` / `delete` / `update` | an organization, required (validated by the handler) |
 | `jira project link` / `unlink` | Unity project id is a **positional** (`<unityProjectId> <projectConfigId>`); no `--cloud-org` at all |
-| `jira issues list` | an organization, required (rejected at parse time) |
+| `jira issues` | an organization, required (rejected at parse time) |
 | `jira configs` | exactly **one** of `--cloud-org` or `--cloud-project` typed, **no `--project-path`** and no inference |
 | `jira issues create/get/link/unlink/search/types` | `--cloud-project` / `--project-path`, or inferred — see [Shared behavior](#shared-behavior) |
 
-**The organization** of `jira server *`, `jira project add`/`delete`/`update` and `jira issues list`
+**The organization** of `jira server *`, `jira project add`/`delete`/`update` and `jira issues`
 is `--cloud-org <id>`, else the `UNITY_CLOUD_ORG` env var, else the stored default organization
 (`unity cloud org set-default`, see [auth-license-cloud.md](auth-license-cloud.md)). It takes an
 organization id only, not a name. An empty or whitespace-only flag or variable counts as not set.
 Only when none of the three gives one is it missing.
-`--organization-id` is the deprecated spelling of `--cloud-org`: it still works, and warns.
 `jira configs` is the exception: it reads its scope only from what you type, apart from
 `UNITY_CLOUD_PROJECT` when you type neither option.
 
@@ -410,7 +431,7 @@ which exit code you get:
 
 | Enforcement | Commands | Behavior when omitted |
 |---|---|---|
-| Parse time | `jira server add/delete/update/test/users/projects/permissions`, `jira issues create/get/search/types`, `jira issues list --cloud-org`, `attachments add sketch` / `add spatial` required flags | usage error, **exit 2** |
+| Parse time | `jira server add/delete/update/test/users/projects/permissions`, `jira issues create/get/search/types`, `jira issues --cloud-org`, `attachments add sketch` / `add spatial` required flags | usage error, **exit 2** |
 | Handler | `jira project add/delete/update --cloud-org`, `jira configs` | command failure (error envelope), not a usage error |
 
 `jira project link` / `unlink` take positionals instead, so a missing id is always a parse-time
@@ -442,7 +463,7 @@ usage error.
 |---|---|---|
 | `jira project add` | `<serverConfigId>` | `--cloud-org`, `--jira-project-id`, `--default-reporter-id` — all required, though `--help` doesn't say so (fallback reporter when an annotation author has no Jira match) |
 | `jira project delete` | `<projectConfigId>` | `--cloud-org` (required, not marked in `--help`); confirmation |
-| `jira project link` / `jira project unlink` | `<unityProjectId> <projectConfigId>` | — (Unity project id is positional here, not a flag) |
+| `jira project link` / `jira project unlink` | `<unityProjectId> <projectConfigId>` | — (Unity project id is positional here, not a flag). `unlink` fails with HTTP 404 (exit 6) when the project isn't linked to that configuration |
 | `jira project update` | `<projectConfigId>` | `--cloud-org` (required, not marked in `--help`), `--default-reporter-id`, `--linked-unity-project-id <id>` (repeatable — **replaces** the whole linked list), `--clear-linked-unity-projects` (mutually exclusive with the previous flag); at least one change flag required |
 
 #### `jira issues`
@@ -451,8 +472,8 @@ usage error.
 |---|---|---|
 | `jira issues create` | `<annotationId>` | `--jira-project-config-id`, `--summary`, `--type <issueTypeId>` — required; `--cloud-project`/`--project-path` optional (inferred); `--description`, `--assignee-user-id`, `--reporter-user-id`, `--parent-issue-id` (sub-task) |
 | `jira issues get` | `<jiraIssueId>` | `--jira-project-config-id` required; `--cloud-project`/`--project-path` optional (inferred) |
-| `jira issues link` / `jira issues unlink` | `<annotationId> <jiraIssueId>` | `--cloud-project`/`--project-path` optional (inferred); `link` also takes optional `--jira-project-config-id`. `unlink` does **not** delete the issue in Jira |
-| `jira issues list` | — | `--cloud-org` **(required, org-scoped — no `--cloud-project`/`--project-path` here)**, `--profile all\|active\|resolved\|unresolved\|draft\|sending` (repeat flag), `--next <token>`, `--limit 1-100` (default 10), `--all`, `--sort Ascending\|Descending` |
+| `jira issues link` / `jira issues unlink` | `<annotationId> <jiraIssueId>` | `--cloud-project`/`--project-path` optional (inferred); `link` also takes optional `--jira-project-config-id`. `unlink` does **not** delete the issue in Jira, and fails with HTTP 404 (exit 6) for an issue the annotation's thread doesn't have linked |
+| `jira issues` | — | `--cloud-org` **(required, org-scoped — no `--cloud-project`/`--project-path` here)**, `--profile all\|active\|resolved\|unresolved\|draft\|sending` (repeat flag), `--next <token>`, `--limit 1-100` (default 10), `--all`, `--sort Ascending\|Descending` |
 | `jira issues search` | — | `--jira-project-config-id` required; `--cloud-project`/`--project-path` optional (inferred); `--query <text>` (plain text, **not JQL**), `--include-subtasks` |
 | `jira issues types` | — | `--jira-project-config-id` required; `--cloud-project`/`--project-path` optional (inferred); lists issue type ids for `create --type` |
 
